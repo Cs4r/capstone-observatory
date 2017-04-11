@@ -13,8 +13,52 @@ object Visualization {
     * @return The predicted temperature at `location`
     */
   def predictTemperature(temperatures: Iterable[(Location, Double)], location: Location): Double = {
-    ???
+    var weightsSum = 0.0
+    var weghtByTempSum = 0.0
+
+    for (temp <- temperatures) {
+      if (temp._1 == location) {
+        return temp._2
+      }
+
+      val di: Double = greatCircleDistance(location, temp._1)
+
+      if (di < 1.0) {
+        return temp._2
+      }
+
+      val wi: Double = weight(di)
+      weightsSum += wi
+      weghtByTempSum += (wi * temp._2)
+    }
+
+    val result = weghtByTempSum / weightsSum
+    result
+
   }
+
+
+  private def weight(distance: Double): Double = {
+    1.0 / (Math.pow(distance, 6))
+  }
+
+  private def greatCircleDistance(a: Location, b: Location): Double = {
+
+    val pk = 180 / 3.14169
+
+    val a1 = a.lat / pk
+    val a2 = a.lon / pk
+    val b1 = b.lat / pk
+    val b2 = b.lon / pk
+
+    val t1 = Math.cos(a1) * Math.cos(a2) * Math.cos(b1) * Math.cos(b2)
+    val t2 = Math.cos(a1) * Math.sin(a2) * Math.cos(b1) * Math.sin(b2)
+    val t3 = Math.sin(a1) * Math.sin(b1)
+    val tt = Math.acos(t1 + t2 + t3)
+
+    return 6371 * tt
+  }
+
 
   /**
     * @param points Pairs containing a value and its associated color
@@ -65,7 +109,7 @@ object Visualization {
     Color(round(red), round(green), round(blue))
   }
 
-  def round(d: Double) = math.round(d).toInt
+  private def round(d: Double) = math.round(d).toInt
 
 
   /**
@@ -74,7 +118,32 @@ object Visualization {
     * @return A 360×180 image where each pixel shows the predicted temperature at its location
     */
   def visualize(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)]): Image = {
-    ???
+    val height = 180
+    val width = 360
+    val rows = height
+    val cols = width
+
+    val pixels: Array[Pixel] = Array.ofDim(rows * cols)
+
+    var lat = 90
+    var lon = -180
+
+    for (x <- 0 until rows) {
+      lon = -180
+      for (y <- 0 until cols) {
+
+        val temperature = predictTemperature(temperatures, Location(lat, lon))
+
+        val color: Color = interpolateColor(colors, temperature)
+
+        pixels(x * cols + y) = Pixel(color.red, color.green, color.blue, 0)
+
+        lon += 1
+      }
+      lat -= 1
+    }
+
+    Image(width, height, pixels)
   }
 
 }

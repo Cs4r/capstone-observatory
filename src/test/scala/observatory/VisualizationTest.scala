@@ -1,7 +1,7 @@
 package observatory
 
 
-import observatory.Visualization.interpolateColor
+import observatory.Visualization.{interpolateColor, predictTemperature}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -98,5 +98,26 @@ class VisualizationTest extends FunSuite with Checkers {
 
     assert(color == expected)
 
+  }
+
+  test("predictTemperature: some point closer") {
+    val location1 = Location(1, 1)
+    val temp1 = 10d
+    val location2 = Location(-10, -10)
+    val temp2 = 50d
+    val list = List(
+      (location1, temp1),
+      (location2, temp2)
+    )
+    val result = predictTemperature(list, Location(0, 0))
+    assert(temp1 - result < temp2 - result)
+  }
+
+  test("Should be closer to 20.0 than 10.0") {
+    val result = predictTemperature(List((Location(45.0, -90.0), 10.0), (Location(-45.0, 0.0), 20.0)), Location(0.0, -45.0))
+
+    print(result)
+
+    assert(math.abs(20 - result) <= math.abs(10 - result))
   }
 }
