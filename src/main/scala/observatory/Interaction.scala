@@ -54,7 +54,7 @@ object Interaction {
 
       val color: Color = interpolateColor(colors, temperature)
 
-      pos -> Pixel(color.red, color.green, color.blue, alpha)
+      pos -> color.toPixel(alpha)
     })
       .seq
       .sortBy(_._1)
@@ -63,13 +63,11 @@ object Interaction {
     Image(width, height, pixels)
   }
 
-  private def toLocation(x: Double, y: Double, zoom: Int): Location = {
+  def toLocation(x: Double, y: Double, zoom: Int): Location = {
     Location(
       lat = toDegrees(atan(sinh(Pi * (1.0 - 2.0 * y / (1 << zoom))))),
       lon = x / (1 << zoom) * 360.0 - 180.0)
   }
-
-  def colorToPixel(color: Color, alpha: Int): Pixel = Pixel(color.red, color.green, color.blue, alpha)
 
   /**
     * Generates all the tiles for zoom levels 0 to 3 (included), for all the given years.

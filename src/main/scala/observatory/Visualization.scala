@@ -136,7 +136,7 @@ object Visualization {
 
         val color: Color = interpolateColor(colors, temperature)
 
-        pixels(x * cols + y) = Pixel(color.red, color.green, color.blue, 0)
+        pixels(x * cols + y) = color.toPixel(0)
 
         lon += 1
       }
